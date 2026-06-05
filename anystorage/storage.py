@@ -9,16 +9,18 @@ from anystorage.enums import StorageEnum
 from anystorage.base import BaseStorage
 from anystorage.contrib.aliyun_storage import AliyunStorage
 from anystorage.contrib.minio_storage import MinioStorage
+from anystorage.contrib.rustfs_storage import RustfsStorage
 
 
 # 支持的存储类型注册表
 _STORAGE_REGISTRY: dict[str, type[BaseStorage]] = {
     StorageEnum.ALIYUN: AliyunStorage,
     StorageEnum.MINIO: MinioStorage,
+    StorageEnum.RUSTFS: RustfsStorage,
 }
 
 
-def create_storage(storage_type: Optional[str] = None) -> type[AliyunStorage] | type[MinioStorage] :
+def create_storage(storage_type: Optional[str] = None) -> type[AliyunStorage] | type[MinioStorage] | type[RustfsStorage]:
     """根据存储类型创建对应的存储实例。
 
     通过环境变量 STORAGE 指定存储类型，也可通过 storage_type 参数显式指定，
@@ -29,7 +31,7 @@ def create_storage(storage_type: Optional[str] = None) -> type[AliyunStorage] | 
             若为 None 则从环境变量 STORAGE 读取。
 
     Returns:
-        BaseStorage: 对应的存储实例（AliyunStorage 或 MinioStorage）。
+        BaseStorage: 对应的存储实例（AliyunStorage、MinioStorage 或 RustfsStorage）。
 
     Raises:
         ValueError: 当 storage_type 为空或不支持时抛出。

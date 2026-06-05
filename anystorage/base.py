@@ -54,6 +54,16 @@ class BaseBucket(ABC):
         pass
 
     @abstractmethod
+    def presigned_get_url(self, object_key: str, expires: int = 3600):
+        """获取预签名 URL"""
+        pass
+
+    @abstractmethod
+    def presigned_put_url(self, object_key: str, expires: int = 3600):
+        """获取预签名 URL"""
+        pass
+
+    @abstractmethod
     def objects(self, prefix: str = "") -> List["BaseObject"]:
         """列出指定前缀下所有对象 key"""
         pass

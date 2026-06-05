@@ -3,8 +3,8 @@ services:
     image: "minio/minio:latest"
     container_name: minio
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "19000:9000"
+      - "19001:9001"
     volumes:
       - ./minio_data:/data
     command: server /data --console-address ":9001"
@@ -13,3 +13,28 @@ services:
       - "MINIO_ROOT_PASSWORD=password"
       - "TZ=Asia/Shanghai"
     restart: on-failure
+  rustfs:
+    image: "rustfs/rustfs:latest"
+    container_name: rustfs
+    ports:
+      - "29000:9000"
+      - "29001:9001"
+    volumes:
+      - ./rustfs_data:/data
+    environment:
+      - "RUSTFS_ACCESS_KEY=user"
+      - "RUSTFS_SECRET_KEY=password"
+      - "RUSTFS_CONSOLE_ENABLE=true"
+      - "RUSTFS_SERVER_DOMAINS=0.0.0.0:29000"
+    restart: on-failure
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "sh", "-c",
+          "curl -f http://0.0.0.0:9000/health && curl -f http://0.0.0.0:9001/rustfs/console/health"
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

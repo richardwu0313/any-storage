@@ -221,6 +221,34 @@ class MinioBucket(BaseBucket):
             return MinioObject(name=object_key, bucket=self, storage=self.storage)
         return None
 
+    def presigned_get_url(self, object_key: str, expires: int = 3600) -> str:
+        """生成用于下载对象的预签名 URL。
+
+        Args:
+            object_key (str): 对象存储中的对象键（Object Key）。
+            expires (int, optional): 预签名 URL 的过期时间（秒）。默认为 3600 秒。
+
+        Returns:
+            str: 预签名下载 URL。
+        """
+        return self._minio_storage.presigned_get_object(bucket_name=self.name,
+                                                        object_name=object_key,
+                                                        expires=timedelta(seconds=expires))
+
+    def presigned_put_url(self, object_key: str, expires: int = 3600) -> str:
+        """生成用于上传对象的预签名 URL。
+
+        Args:
+            object_key (str): 对象存储中的目标对象键（Object Key）。
+            expires (int, optional): 预签名 URL 的过期时间（秒）。默认为 3600 秒。
+
+        Returns:
+            str: 预签名上传 URL。
+        """
+        return self._minio_storage.presigned_put_object(bucket_name=self.name,
+                                                        object_name=object_key,
+                                                        expires=timedelta(seconds=expires))
+
 
 class MinioObject(BaseObject):
     """MinIO Object 封装类。

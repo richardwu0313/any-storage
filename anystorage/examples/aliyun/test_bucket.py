@@ -3,6 +3,7 @@ import tempfile
 import time
 
 import pytest
+import requests
 from dotenv import load_dotenv
 
 from anystorage.contrib.aliyun_storage import AliyunStorage
@@ -203,12 +204,55 @@ class TestBucketObjectOperations:
             os.unlink(upload_path)
             bucket.delete_object(object_key)
 
+    @pytest.mark.order(12)
+    def test_presigned_get_url(self, bucket: AliyunBucket):
+        """presigned_get_url 应返回可通过 GET 下载对象的 URL。"""
+        object_key = "test-crud/presigned_get.txt"
+        content = "presigned get test"
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+            f.write(content)
+            upload_path = f.name
+
+        try:
+            bucket.fput(upload_path, object_key)
+            url = bucket.presigned_get_url(object_key)
+            assert isinstance(url, str)
+            assert len(url) > 0
+            # 通过 HTTP GET 验证 URL 可用
+            response = requests.get(url)
+            assert response.status_code == 200
+            assert response.text == content
+        finally:
+            os.unlink(upload_path)
+            bucket.delete_object(object_key)
+
+    @pytest.mark.order(13)
+    def test_presigned_put_url(self, bucket: AliyunBucket):
+        """presigned_put_url 应返回可通过 PUT 上传对象的 URL。"""
+        object_key = "test-crud/presigned_put.txt"
+        content = "presigned put test"
+
+        try:
+            url = bucket.presigned_put_url(object_key)
+            assert isinstance(url, str)
+            assert len(url) > 0
+            # 通过 HTTP PUT 验证 URL 可用
+            response = requests.put(url, data=content.encode("utf-8"))
+            assert response.status_code == 200
+            # 验证上传成功
+            obj = bucket.get_object(object_key)
+            assert obj is not None
+            assert obj.exists() is True
+        finally:
+            bucket.delete_object(object_key)
+
 # ==================== Delete ====================
 
 class TestBucketDelete:
     """Bucket 删除相关测试。"""
 
-    @pytest.mark.order(13)
+    @pytest.mark.order(14)
     def test_delete_object(self, bucket: AliyunBucket):
         """delete_object 后对象应不再存在。"""
         object_key = "test-crud/delete_obj.txt"
@@ -226,7 +270,7 @@ class TestBucketDelete:
         finally:
             os.unlink(upload_path)
 
-    @pytest.mark.order(14)
+    @pytest.mark.order(15)
     def test_delete_bucket(self, storage: AliyunStorage):
         """delete 后 Bucket 应不再存在。"""
         del_name = f"{TEST_BUCKET_NAME}"

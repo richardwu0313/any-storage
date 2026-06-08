@@ -248,6 +248,30 @@ class AliyunBucket(BaseBucket):
                                          storage=self.storage))
         return obj_list
 
+    def presigned_get_url(self, object_key: str, expires: int = 3600) -> str:
+        """生成用于 GET 请求的预签名 URL。
+
+        Args:
+            object_key (str): 对象存储中的对象键（Object Key）。
+            expires (int, optional): URL 的有效期（秒）。默认为 3600 秒。
+
+        Returns:
+            str: 可用于 GET 请求的预签名 URL。
+        """
+        return self._aliyun_bucket.sign_url("GET", object_key, expires)
+
+    def presigned_put_url(self, object_key: str, expires: int = 3600) -> str:
+        """生成用于 PUT 请求的预签名 URL。
+
+        Args:
+            object_key (str): 对象存储中的对象键（Object Key）。
+            expires (int, optional): URL 的有效期（秒）。默认为 3600 秒。
+
+        Returns:
+            str: 可用于 PUT 请求的预签名 URL。
+        """
+        return self._aliyun_bucket.sign_url("PUT", object_key, expires)
+
 
 class AliyunObject(BaseObject):
     """Aliyun OSS Object 封装类。

@@ -19,3 +19,10 @@ MINIO_STORAGE_CONFIG = {
     "read_timeout": int(os.getenv('MINIO_READ_TIMEOUT', 10)),
     "use_ssl": os.getenv('MINIO_ENDPOINT_SSL', 'false').lower() in ('true', '1', 'yes'),
 }
+
+RUSTFS_STORAGE_CONFIG = {
+    "access_key_id": os.getenv('RUSTFS_ACCESS_KEY_ID', ""),
+    "access_key_secret": os.getenv('RUSTFS_ACCESS_KEY_SECRET', ""),
+    "endpoint": os.getenv('RUSTFS_ENDPOINT', ""),
+    "use_ssl": os.getenv('RUSTFS_ENDPOINT_SSL', 'false').lower() in ('true', '1', 'yes'),
+}

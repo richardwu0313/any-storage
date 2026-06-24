@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from io import BytesIO
 from typing import List
 
 
@@ -51,6 +52,16 @@ class BaseBucket(ABC):
     @abstractmethod
     def fget(self, object_key: str, local_path: str) -> None:
         """对象存储下载到本地"""
+        pass
+
+    @abstractmethod
+    def put(self, data: bytes, object_key: str, content_type: str = "application/octet-stream") -> None:
+        """将字节数据上传至对象存储"""
+        pass
+
+    @abstractmethod
+    def get(self, object_key: str) -> bytes:
+        """从对象存储读取对象内容，返回字节数据"""
         pass
 
     @abstractmethod

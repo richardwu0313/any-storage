@@ -1,4 +1,5 @@
 from minio import Minio, S3Error
+import io
 import urllib3
 from datetime import timedelta
 import os
@@ -176,6 +177,41 @@ class MinioBucket(BaseBucket):
         self._minio_storage.fget_object(bucket_name=self.name,
                                         file_path=local_path,
                                         object_name=object_key)
+
+    def put(self, data: bytes, object_key: str, content_type: str = "application/octet-stream") -> None:
+        """将字节数据上传至 MinIO。
+
+        Args:
+            data (bytes): 需要上传的字节数据。
+            object_key (str): 对象存储中的目标对象键（Object Key）。
+            content_type (str, optional): 内容类型。默认为 "application/octet-stream"。
+        """
+        stream = io.BytesIO(data)
+        self._minio_storage.put_object(bucket_name=self.name,
+                                       object_name=object_key,
+                                       data=stream,
+                                       length=len(data),
+                                       content_type=content_type)
+        logger.info(f"Minio put: {object_key} ({len(data)} bytes)")
+
+    def get(self, object_key: str) -> bytes:
+        """从 MinIO 读取对象内容，返回字节数据。
+
+        Args:
+            object_key (str): 对象存储中的对象键（Object Key）。
+
+        Returns:
+            bytes: 对象的完整字节内容。
+        """
+        response = self._minio_storage.get_object(bucket_name=self.name,
+                                                   object_name=object_key)
+        try:
+            data = response.read()
+        finally:
+            response.close()
+            response.release_conn()
+        logger.info(f"Minio get: {object_key} ({len(data)} bytes)")
+        return data
 
     def objects(self, prefix: str = "") -> List["MinioObject"]:
         """列举 Bucket 中匹配指定前缀的所有对象。

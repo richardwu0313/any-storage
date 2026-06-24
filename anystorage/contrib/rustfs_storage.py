@@ -1,4 +1,5 @@
 import os
+import io
 import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
@@ -170,6 +171,34 @@ class RustfsBucket(BaseBucket):
                                       Key=object_key,
                                       Filename=local_path)
         logger.info(f"RustFS 下载: {object_key} → {local_path}")
+
+    def put(self, data: bytes, object_key: str, content_type: str = "application/octet-stream") -> None:
+        """将字节数据上传至 RustFS。
+
+        Args:
+            data (bytes): 需要上传的字节数据。
+            object_key (str): 对象存储中的目标对象键（Object Key）。
+            content_type (str, optional): 内容类型。默认为 "application/octet-stream"。
+        """
+        self._s3_client.put_object(Bucket=self.name,
+                                   Key=object_key,
+                                   Body=data,
+                                   ContentType=content_type)
+        logger.info(f"RustFS put: {object_key} ({len(data)} bytes)")
+
+    def get(self, object_key: str) -> bytes:
+        """从 RustFS 读取对象内容，返回字节数据。
+
+        Args:
+            object_key (str): 对象存储中的对象键（Object Key）。
+
+        Returns:
+            bytes: 对象的完整字节内容。
+        """
+        response = self._s3_client.get_object(Bucket=self.name, Key=object_key)
+        data = response["Body"].read()
+        logger.info(f"RustFS get: {object_key} ({len(data)} bytes)")
+        return data
 
     def objects(self, prefix: str = "") -> List["RustfsObject"]:
         """列举 Bucket 中匹配指定前缀的所有对象。

@@ -179,7 +179,7 @@ class TestBucketObjectOperations:
             os.unlink(upload_path)
             bucket.delete_object(object_key)
 
-    @pytest.mark.order(12)
+    @pytest.mark.order(11)
     def test_object_exists_and_size(self, bucket: MinioBucket):
         """已上传的对象应存在且 size 大于 0。"""
         object_key = "test-crud/exists_size.txt"
@@ -198,7 +198,25 @@ class TestBucketObjectOperations:
         finally:
             os.unlink(upload_path)
             bucket.delete_object(object_key)
+
     @pytest.mark.order(12)
+    def test_put_and_get(self, bucket: MinioBucket):
+        """put 上传字节数据后，get 应能读取到相同内容。"""
+        object_key = "test-crud/put_get.txt"
+        content = "hello any-storage minio put/get test"
+        data = content.encode("utf-8")
+
+        try:
+            bucket.put(data, object_key, content_type="text/plain")
+
+            result = bucket.get(object_key)
+            assert isinstance(result, bytes)
+            assert result == data
+            assert result.decode("utf-8") == content
+        finally:
+            bucket.delete_object(object_key)
+
+    @pytest.mark.order(13)
     def test_presigned_get_url(self, bucket: MinioBucket):
         """presigned_get_url 应返回可通过 GET 下载对象的 URL。"""
         object_key = "test-crud/presigned_get.txt"
@@ -221,7 +239,7 @@ class TestBucketObjectOperations:
             os.unlink(upload_path)
             bucket.delete_object(object_key)
 
-    @pytest.mark.order(13)
+    @pytest.mark.order(14)
     def test_presigned_put_url(self, bucket: MinioBucket):
         """presigned_put_url 应返回可通过 PUT 上传对象的 URL。"""
         object_key = "test-crud/presigned_put.txt"
@@ -247,7 +265,7 @@ class TestBucketObjectOperations:
 class TestBucketDelete:
     """Bucket 删除相关测试。"""
 
-    @pytest.mark.order(14)
+    @pytest.mark.order(15)
     def test_delete_object(self, bucket: MinioBucket):
         """delete_object 后对象应不再存在。"""
         object_key = "test-crud/delete_obj.txt"
@@ -267,7 +285,7 @@ class TestBucketDelete:
         finally:
             os.unlink(upload_path)
 
-    @pytest.mark.order(15)
+    @pytest.mark.order(16)
     def test_delete_bucket(self, storage: MinioStorage):
         """delete 后 Bucket 应不再存在。"""
         del_name = f"{TEST_BUCKET_NAME}"

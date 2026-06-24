@@ -196,6 +196,24 @@ class TestBucketObjectOperations:
         finally:
             os.unlink(upload_path)
             bucket.delete_object(object_key)
+
+    @pytest.mark.order(11)
+    def test_put_and_get(self, bucket: RustfsBucket):
+        """put 上传字节数据后，get 应能读取到相同内容。"""
+        object_key = "test-crud/put_get.txt"
+        content = "hello any-storage rustfs put/get test"
+        data = content.encode("utf-8")
+
+        try:
+            bucket.put(data, object_key, content_type="text/plain")
+
+            result = bucket.get(object_key)
+            assert isinstance(result, bytes)
+            assert result == data
+            assert result.decode("utf-8") == content
+        finally:
+            bucket.delete_object(object_key)
+
     @pytest.mark.order(12)
     def test_presigned_get_url(self, bucket: RustfsBucket):
         """presigned_get_url 应返回可通过 GET 下载对象的 URL。"""

@@ -1,4 +1,5 @@
 import oss2
+import io
 import os
 from typing import List
 from typing import Optional
@@ -181,6 +182,41 @@ class AliyunBucket(BaseBucket):
         assert self._aliyun_bucket, "Aliyun OSS Bucket 不存在"
         self._aliyun_bucket.get_object_to_file(object_key, local_path)
         logger.info(f"Aliyun OSS 下载: {object_key} → {local_path}")
+
+    def put(self, data: bytes, object_key: str, content_type: str = "application/octet-stream") -> None:
+        """将字节数据上传至 Aliyun OSS。
+
+        Args:
+            data (bytes): 需要上传的字节数据。
+            object_key (str): 对象存储中的目标对象键（Object Key）。
+            content_type (str, optional): 内容类型。默认为 "application/octet-stream"。
+
+        Raises:
+            AssertionError: 当底层的阿里云 OSS Bucket 实例不存在时抛出。
+        """
+        assert self._aliyun_bucket, "Aliyun OSS Bucket 不存在"
+        self._aliyun_bucket.put_object(key=object_key,
+                                       data=data,
+                                       headers={"Content-Type": content_type})
+        logger.info(f"Aliyun OSS put: {object_key} ({len(data)} bytes)")
+
+    def get(self, object_key: str) -> bytes:
+        """从 Aliyun OSS 读取对象内容，返回字节数据。
+
+        Args:
+            object_key (str): 对象存储中的对象键（Object Key）。
+
+        Returns:
+            bytes: 对象的完整字节内容。
+
+        Raises:
+            AssertionError: 当底层的阿里云 OSS Bucket 实例不存在时抛出。
+        """
+        assert self._aliyun_bucket, "Aliyun OSS Bucket 不存在"
+        result = self._aliyun_bucket.get_object(object_key)
+        data = result.read()
+        logger.info(f"Aliyun OSS get: {object_key} ({len(data)} bytes)")
+        return data
 
     def delete(self) -> None:
         """删除当前 Bucket。
